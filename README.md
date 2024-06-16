@@ -7,6 +7,7 @@ Go HTTP(S)代理库, 支持中间人代理解密HTTPS
 go get github.com/ouqiang/goproxy
 ```
 
+
 使用
 ----
 
@@ -43,6 +44,7 @@ curl -x localhost:8080 https://www.baidu.com
 中间人代理, 解密HTTPS
 ---
 系统需导入根证书 mitm-proxy.crt
+参考[mac导入CA证书](https://help.aliyun.com/zh/ssl-certificate/user-guide/install-a-root-certificate-on-macos)
 ```go
 package main
 
@@ -185,3 +187,21 @@ func main() {
 }
 
 ```
+
+## 案例
+
+见example目录
+```
+cd example
+go build -o goproxy
+```
+
+打印网页信息乱码，有可能是通讯使用了gzip等压缩格式，可以通过Content-Encoding头查看，使用对应的解压缩方式
+
+## 使用SwitchyOmega
+简单配置为：
+http协议，127.0.0.1  8080  就可以代理https请求了。
+不需要选或者设置https协议，原因见：
+[
+误解：HTTPS 代理有 BUG
+](https://github.com/feliscatus/switchyomega/issues/281)

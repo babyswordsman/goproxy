@@ -31,6 +31,8 @@ import (
 	"math/big"
 	"net"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 var (
@@ -74,6 +76,10 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("加载根证书私钥失败: %s", err))
 	}
+
+	fmt.Println("rootCA:", defaultRootCA.DNSNames, "time:", defaultRootCA.NotBefore, "-",
+		defaultRootCA.NotAfter, "serial num:", defaultRootCA.SerialNumber, "issuer:", defaultRootCA.Issuer.Country,
+		" ", defaultRootCA.Issuer.Organization)
 }
 
 // Certificate 证书管理
@@ -122,6 +128,9 @@ func (c *Certificate) GenerateTlsConfig(host string) (*tls.Config, error) {
 				return tlsConf, nil
 			}
 		}
+	}
+	if logger.IsLevelEnabled(logger.InfoLevel) {
+		logger.Infof("generate pem for : %s", host)
 	}
 	pair, err := c.GeneratePem(host, 1, defaultRootCA, defaultRootKey)
 	if err != nil {

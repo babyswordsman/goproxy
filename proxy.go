@@ -33,6 +33,7 @@ import (
 
 	"github.com/ouqiang/goproxy/cert"
 	"github.com/ouqiang/websocket"
+	logger "github.com/sirupsen/logrus"
 )
 
 const (
@@ -257,6 +258,9 @@ var _ http.Handler = &Proxy{}
 
 // ServeHTTP 实现了http.Handler接口
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if logger.IsLevelEnabled(logger.DebugLevel) {
+		logger.Debugf("serveHttp: %s", req.URL)
+	}
 	if req.URL.Host == "" {
 		req.URL.Host = req.Host
 	}
@@ -271,11 +275,17 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}()
 	p.delegate.Connect(ctx, rw)
 	if ctx.abort {
+		logger.Warnf("ctx.abort:%s", req.URL.String())
 		return
 	}
 	p.delegate.Auth(ctx, rw)
 	if ctx.abort {
+		logger.Warnf("ctx.abort:%s", req.URL.String())
 		return
+	}
+
+	if logger.IsLevelEnabled(logger.DebugLevel) {
+		logger.Debugf("method:%s", ctx.Req.Method)
 	}
 
 	switch {
@@ -373,6 +383,7 @@ func (p *Proxy) httpsProxy(ctx *Context, tlsClientConn *tls.Conn) {
 
 // 隧道代理
 func (p *Proxy) tunnelProxy(ctx *Context, rw http.ResponseWriter) {
+
 	clientConn, err := hijacker(rw)
 	if err != nil {
 		p.delegate.ErrorLog(err)
@@ -433,7 +444,7 @@ func (p *Proxy) tunnelProxy(ctx *Context, rw http.ResponseWriter) {
 		}()
 		if err := tlsClientConn.Handshake(); err != nil {
 			p.tunnelConnected(ctx, err)
-			p.delegate.ErrorLog(fmt.Errorf("%s - HTTPS解密, 握手失败: %s", ctx.Req.URL.Host, err))
+			p.delegate.ErrorLog(fmt.Errorf("%s - 与请求客户端 HTTPS 握手失败: %s", ctx.Req.URL.Host, err))
 			return
 		}
 
