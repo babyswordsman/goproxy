@@ -90,7 +90,8 @@ func (e *EventHandler) BeforeResponse(ctx *goproxy.Context, resp *http.Response,
 		encoding := resp.Header.Get("Content-Encoding")
 
 		//todo: 处理字符集
-		if strings.Contains(strings.ToLower(content_type), "text/html") {
+		if strings.Contains(strings.ToLower(content_type), "text/html") ||
+			strings.Contains(strings.ToLower(content_type), "application/json") {
 			if strings.Contains(encoding, "gzip") {
 				buf := bytes.Buffer{}
 				err := gunzipWrite(&buf, body)
