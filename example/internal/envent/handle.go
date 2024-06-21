@@ -101,12 +101,10 @@ func (e *EventHandler) BeforeResponse(ctx *goproxy.Context, resp *http.Response,
 			buf.Write(body)
 		}
 
-		switch {
-		case strings.Contains(strings.ToLower(contentType), "text/html"):
-			internal.Distribution(buf.Bytes(), ctx.Req.URL.String())
-		case strings.Contains(strings.ToLower(contentType), "application/json"):
-		case strings.Contains(strings.ToLower(contentType), "text/plain"):
-		}
+		//if strings.Contains(strings.ToLower(contentType), "text/html") ||
+		//	strings.Contains(strings.ToLower(contentType), "application/json") {
+		internal.Distribution(buf.Bytes(), ctx.Req.URL.String(), ctx.Req.Method,
+			strings.ToLower(contentType))
 	}
 
 	// Request.Body只能读取一次, 读取后必须再放回去
