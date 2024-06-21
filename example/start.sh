@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nohup ./goproxy >>  proxy.log 2>&1 &
+nohup ./goproxy run >>  proxy.log 2>&1 &

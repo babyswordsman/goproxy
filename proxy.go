@@ -29,11 +29,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ouqiang/websocket"
+	logger "github.com/sirupsen/logrus"
 	"github.com/viki-org/dnscache"
 
 	"github.com/ouqiang/goproxy/cert"
-	"github.com/ouqiang/websocket"
-	logger "github.com/sirupsen/logrus"
 )
 
 const (
