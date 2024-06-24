@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-
+	"regexp"
 	"github.com/PuerkitoBio/goquery"
 	logger "github.com/sirupsen/logrus"
 )
+var PROPERTIES_REG = regexp.MustCompile(`\S+：\S+`)
 
 func Item(body []byte, source string) *Jd {
 	var jd = new(Jd)
@@ -32,7 +33,11 @@ func Item(body []byte, source string) *Jd {
 					jd.ProductNumber = strings.TrimSpace(item.Text())
 				}
 			})
-			// todo: 商品价格
+			// 商品价格
+			doc.Find("div.dd span.p-price span.price").Each(func(index int, item *goquery.Selection) {
+				jd.ProductPrice = strings.TrimSpace(item.Text())
+				logger.Infof("GoodsAttr: ProductPrice %s", jd.ProductPrice)
+			})
 			// 商品链接
 			doc.Find("link[rel='canonical']").Each(func(index int, item *goquery.Selection) {
 				href, exists := item.Attr("href")
@@ -40,9 +45,19 @@ func Item(body []byte, source string) *Jd {
 					jd.ProductLink = fmt.Sprintf("https:%s\n", href)
 				}
 			})
-			// todo: 一级分类
-			// todo: 二级分类
-			// todo: 三级分类
+			// 一级分类
+			doc.Find("div.crumb.fl.clearfix div.item.first a").Each(func(index int, item *goquery.Selection) {
+				jd.FirstLevel = strings.TrimSpace(item.Text())
+			})
+			// 二级分类
+			doc.Find("div.crumb.fl.clearfix div:nth-child(3) a").Each(func(index int, item *goquery.Selection) {
+				jd.SecondLevel = strings.TrimSpace(item.Text())
+			})
+			// 三级分类
+			doc.Find("div.crumb.fl.clearfix div:nth-child(5) a").Each(func(index int, item *goquery.Selection) {
+				jd.ThirdLevel = strings.TrimSpace(item.Text())
+			})
+
 			// 所属店铺
 			doc.Find(".parameter2.p-parameter-list .shieldShopInfo a").Each(func(index int, item *goquery.Selection) {
 				jd.Store = strings.TrimSpace(item.Text())
@@ -54,9 +69,28 @@ func Item(body []byte, source string) *Jd {
 					jd.ProductPicture.Main = append(jd.ProductPicture.Main, fmt.Sprintf("https:%s\n", imgSrc))
 				}
 			})
-			// todo: 商品评价
-			// todo: 扩展属性
+			// todo: 商品评价	
+
+			// 扩展属性
+			doc.Find("div.tab-con div:nth-child(1) div.p-parameter").Each(func(index int, item *goquery.Selection) {
+				text := strings.TrimSpace(item.Text());
+				logger.Infof("GoodsAttr: Attr %s", text)
+				matches := PROPERTIES_REG.FindAllString(text, -1)
+				attrs := make(map[string]string)
+				for _, match := range matches {
+					parts := strings.Split(match, "：")
+					attrs[parts[0]] = parts[1]
+
+				}
+				jd.ExtendedProperties = attrs
+			})
+
 			// 售后保障
+			doc.Find("div.mc div div.serve-agree-bd dl").Each(func(index int, item *goquery.Selection) {
+				jd.SalesGuarantee = strings.TrimSpace(item.Text())
+				logger.Infof("GoodsAttr: SalesGuarantee %s", jd.SalesGuarantee)
+			})
+
 		}
 	}
 	return jd
