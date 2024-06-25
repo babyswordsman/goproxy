@@ -16,7 +16,7 @@ func Item(body []byte, source string) *Jd {
 	var jd = new(Jd)
 	switch {
 	case strings.Contains(source, "item.jd.com"):
-		logger.Infof(" -----> %s \n<> %s", source, string(body))
+		logger.Infof("-----> %s \n", source)
 		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 		if err != nil {
 			logger.Warnf("No url found")
@@ -36,10 +36,10 @@ func Item(body []byte, source string) *Jd {
 				}
 			})
 			// todo 商品价格
-			doc.Find("body div.summary-price.J-summary-price").Each(func(index int, item *goquery.Selection) {
-				jd.ProductPrice = strings.TrimSpace(item.Text())
-				logger.Infof("GoodsAttr: ProductPrice %s", jd.ProductPrice)
-			})
+			//doc.Find("body div.summary-price.J-summary-price").Each(func(index int, item *goquery.Selection) {
+			//	jd.ProductPrice = strings.TrimSpace(item.Text())
+			//	logger.Infof("GoodsAttr: ProductPrice %s", jd.ProductPrice)
+			//})
 			// 商品链接
 			doc.Find("link[rel='canonical']").Each(func(index int, item *goquery.Selection) {
 				href, exists := item.Attr("href")
