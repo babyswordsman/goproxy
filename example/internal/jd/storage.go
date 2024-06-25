@@ -7,15 +7,20 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-var JddChan chan *Jd
+var (
+	JddChan chan *Jd
 
-func init() {
+	Filename string
+)
+
+func Init() {
 	JddChan = make(chan *Jd)
 	go func() {
 		// 打开文件，如果文件不存在则创建一个新文件
-		file, err := os.OpenFile("jd.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		file, err := os.OpenFile(Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
-			logger.Fatal(err)
+			dir, _ := os.Getwd()
+			logger.Fatal(dir, "/", Filename, " : ", err)
 		}
 		defer file.Close()
 

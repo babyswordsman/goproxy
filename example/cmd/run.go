@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"time"
@@ -11,22 +10,24 @@ import (
 
 	"github.com/ouqiang/goproxy"
 	"github.com/ouqiang/goproxy/example/internal/envent"
+	"github.com/ouqiang/goproxy/example/internal/jd"
 )
 
 var (
-	h = flag.String("h", "", "监听地址")
-	p = flag.Int("p", 8080, "监听端口")
+	host string
+	port int
 )
 
 var serverCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run goproxy",
 	Run: func(cmd *cobra.Command, args []string) {
+		jd.Init()
 		logger.SetReportCaller(true)
 		logger.SetLevel(logger.DebugLevel)
 		proxy := goproxy.New(goproxy.WithDecryptHTTPS(&envent.Cache{}), goproxy.WithDelegate(&envent.EventHandler{}))
 		server := &http.Server{
-			Addr:         fmt.Sprintf("%s:%d", *h, *p),
+			Addr:         fmt.Sprintf("%s:%d", host, port),
 			Handler:      proxy,
 			ReadTimeout:  1 * time.Minute,
 			WriteTimeout: 1 * time.Minute,
@@ -40,6 +41,9 @@ var serverCmd = &cobra.Command{
 }
 
 func init() {
+	serverCmd.Flags().StringVarP(&host, "host", "h", "", "Listen host")
+	serverCmd.Flags().IntVarP(&port, "port", "p", 8080, "Listen port")
+	serverCmd.Flags().StringVarP(&jd.Filename, "file", "f", "jd.json", "storage file path")
+
 	rootCmd.AddCommand(serverCmd)
-	flag.Parse()
 }
