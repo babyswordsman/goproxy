@@ -3,18 +3,20 @@ package jd
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"regexp"
+	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 	logger "github.com/sirupsen/logrus"
 )
+
 var PROPERTIES_PATTERN = regexp.MustCompile(`\S+：\S+`)
 
 func Item(body []byte, source string) *Jd {
 	var jd = new(Jd)
 	switch {
 	case strings.Contains(source, "item.jd.com"):
-		logger.Infof(" -----> %s", source)
+		logger.Infof(" -----> %s \n<> %s", source, string(body))
 		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 		if err != nil {
 			logger.Warnf("No url found")
@@ -65,10 +67,11 @@ func Item(body []byte, source string) *Jd {
 			doc.Find("#spec-img").Each(func(index int, item *goquery.Selection) {
 				imgSrc, exists := item.Attr("data-origin")
 				if exists {
+					jd.ProductPicture = new(ProductPicture)
 					jd.ProductPicture.Main = append(jd.ProductPicture.Main, fmt.Sprintf("https:%s\n", imgSrc))
 				}
 			})
-			// todo: 商品评价	
+			// todo: 商品评价
 			// 扩展属性
 			doc.Find("div.tab-con div:nth-child(1) div.p-parameter").Each(func(index int, item *goquery.Selection) {
 				text := strings.TrimSpace(item.Text())
