@@ -41,7 +41,7 @@ var serverCmd = &cobra.Command{
 }
 
 func init() {
-	serverCmd.Flags().StringVarP(&host, "host", "h", "", "Listen host")
+	serverCmd.Flags().StringVarP(&host, "host", "a", "", "Listen host")
 	serverCmd.Flags().IntVarP(&port, "port", "p", 8080, "Listen port")
 	serverCmd.Flags().StringVarP(&jd.Filename, "file", "f", "jd.json", "storage file path")
 
